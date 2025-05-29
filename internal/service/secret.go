@@ -49,12 +49,6 @@ func (s *SecretService) List(ctx context.Context, userID int64) ([]*models.Secre
 	if err != nil {
 		return nil, err
 	}
-	for _, sec := range secrets {
-		dec, err := decryptAES(s.key, sec.Data)
-		if err == nil {
-			sec.Data = dec
-		}
-	}
 	return secrets, nil
 }
 
