@@ -4,6 +4,7 @@ import {
     useSecrets,
     useCreateSecret,
     useDeleteSecret,
+    useSecret,
 } from "../hooks/useSecrets";
 
 function decodeIfNeeded(type, data) {
@@ -62,6 +63,9 @@ export default function Secrets() {
     const { data: secrets, isLoading, error } = useSecrets();
     const createSecret = useCreateSecret();
     const deleteSecret = useDeleteSecret();
+    const [openedId, setOpenedId] = useState(null);
+    const { data: decrypted, isLoading: decryptedLoading } =
+        useSecret(openedId);
 
     const [type, setType] = useState("password");
     const [data, setData] = useState("");
@@ -218,29 +222,86 @@ export default function Secrets() {
                     secrets.map((s) => (
                         <li
                             key={s.id}
-                            className="bg-white p-4 rounded shadow flex justify-between items-center"
+                            className="bg-white p-4 rounded shadow flex justify-between items-start gap-4"
                         >
-                            <div>
-                                <div className="font-bold">{s.type}</div>
-                                <div className="break-all text-sm text-gray-700">
-                                    {decodeIfNeeded(s.type, s.data)}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-bold text-blue-700">
+                                        {s.type}
+                                    </span>
+                                    {s.type === "binary" && (
+                                        <span className="text-xs text-gray-400">
+                                            base64
+                                        </span>
+                                    )}
                                 </div>
-                                {s.type === "binary" && (
-                                    <div className="text-xs text-gray-400">
-                                        base64
-                                    </div>
-                                )}
-                                <h2 className="text-lg font-bold">Meta data</h2>
-                                <div className="text-xs text-gray-500">
+                                <div className="break-all text-sm text-gray-700 border-b pb-2 mb-2">
+                                    {s.data}
+                                </div>
+                                <h2 className="text-xs font-bold text-gray-500 uppercase mb-1 tracking-wider">
+                                    Meta data
+                                </h2>
+                                <div className="text-xs text-gray-500 mb-2">
                                     {renderMeta(s.meta)}
                                 </div>
+                                {openedId === s.id && decrypted && (
+                                    <div className="mt-2 p-2 rounded bg-green-50 border border-green-200">
+                                        <div className="text-xs text-green-600 font-semibold mb-1 flex items-center gap-1">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4 inline"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M13 16h-1v-4h-1m4 4h-1v-4h-1m-4 4h-1v-4h-1"
+                                                />
+                                            </svg>
+                                            Расшифрованные данные
+                                        </div>
+                                        <div className="break-all text-green-700 text-sm">
+                                            {decodeIfNeeded(
+                                                s.type,
+                                                decrypted.data
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                            <button
-                                onClick={() => deleteSecret.mutate(s.id)}
-                                className="ml-4 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                            >
-                                Удалить
-                            </button>
+                            <div className="flex flex-col gap-2 items-end">
+                                <button
+                                    onClick={() => setOpenedId(s.id)}
+                                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 flex items-center gap-1"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 w-4"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 16h-1v-4h-1m4 4h-1v-4h-1m-4 4h-1v-4h-1"
+                                        />
+                                    </svg>
+                                    {decryptedLoading && openedId === s.id
+                                        ? "..."
+                                        : "Расшифровать"}
+                                </button>
+                                <button
+                                    onClick={() => deleteSecret.mutate(s.id)}
+                                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                                >
+                                    Удалить
+                                </button>
+                            </div>
                         </li>
                     ))}
             </ul>

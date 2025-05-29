@@ -13,6 +13,22 @@ GoKeeper — сервис для хранения и управления сек
 
 ## Как запустить проект (docker-compose)
 
+**Перед запуском создай файл `.env` или скопируй `example.env` в `.env` в корне проекта.**
+
+Пример содержимого:
+
+```
+DB_HOST=postgres
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=gokeeper
+DB_SSL_MODE=disable
+PORT=8080
+JWT_SECRET=testtest
+SECRET_AES_KEY=12345678901234567890123456789012
+```
+
 1. Убедись, что установлен Docker и docker-compose
 2. В корне проекта:
     ```sh
